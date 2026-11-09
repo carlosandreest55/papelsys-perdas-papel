@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PapelSys - Apontamento de Perdas & IA Copilot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- SIDEBAR DE NAVEGAÇÃO -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">📜</div>
+        <div class="brand-text">
+          <h2>PapelSys</h2>
+          <span>Controle de Perdas & Qualidade</span>
+        </div>
+      </div>
+
+      <div class="plant-status">
+        <div class="status-indicator active"></div>
+        <div class="status-info">
+          <strong>Linha de Produção</strong>
+          <small>Operação Ativa • Turno Atual</small>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="icon">📊</span>
+          <span>Dashboard & KPIs</span>
+        </button>
+        <button class="nav-item" data-view="novo-apontamento">
+          <span class="icon">📝</span>
+          <span>Novo Apontamento</span>
+        </button>
+        <button class="nav-item" data-view="historico">
+          <span class="icon">📋</span>
+          <span>Histórico de Perdas</span>
+        </button>
+        <button class="nav-item nav-ai" data-view="chat-ia">
+          <span class="icon">🤖</span>
+          <span>IA Assistente Papeleiro</span>
+          <span class="ai-badge">Copilot</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="tech-tag">Indústria 4.0 • Celulose & Papel</div>
+        <div class="clock" id="live-clock">--:--:--</div>
+      </div>
+    </aside>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main class="main-content">
+      <!-- CABEÇALHO SUPERIOR -->
+      <header class="top-header">
+        <div class="header-title">
+          <h1 id="page-title">Painel Geral de Perdas de Produção</h1>
+          <p id="page-subtitle">Monitoramento de refugo, quebras de folha e rendimento industrial</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-secondary" id="btn-refresh">🔄 Atualizar Dados</button>
+          <button class="btn btn-primary" id="btn-quick-new">➕ Novo Apontamento</button>
+        </div>
+      </header>
+
+      <!-- KPI CARDS SUMMARY -->
+      <section class="kpi-grid">
+        <div class="kpi-card card-danger">
+          <div class="kpi-header">
+            <span class="kpi-title">Perda Acumulada</span>
+            <span class="kpi-icon">⚖️</span>
+          </div>
+          <div class="kpi-value" id="kpi-total-ton">0.00 <span class="unit">ton</span></div>
+          <div class="kpi-sub" id="kpi-total-kg">0 kg registrados</div>
+        </div>
+
+        <div class="kpi-card card-warning">
+          <div class="kpi-header">
+            <span class="kpi-title">Tempo Parado Total</span>
+            <span class="kpi-icon">⏱️</span>
+          </div>
+          <div class="kpi-value" id="kpi-total-horas">0.0 <span class="unit">horas</span></div>
+          <div class="kpi-sub" id="kpi-total-min">0 minutos de parada</div>
+        </div>
+
+        <div class="kpi-card card-info">
+          <div class="kpi-header">
+            <span class="kpi-title">Impacto Financeiro Estimado</span>
+            <span class="kpi-icon">💰</span>
+          </div>
+          <div class="kpi-value" id="kpi-total-custo">R$ 0,00</div>
+          <div class="kpi-sub">Refugo + Energia + Amido</div>
+        </div>
+
+        <div class="kpi-card card-primary">
+          <div class="kpi-header">
+            <span class="kpi-title">Apontamentos Realizados</span>
+            <span class="kpi-icon">📑</span>
+          </div>
+          <div class="kpi-value" id="kpi-total-registros">0</div>
+          <div class="kpi-sub">Ocorrências registradas</div>
+        </div>
+      </section>
+
+      <!-- VIEW 1: DASHBOARD -->
+      <section id="view-dashboard" class="content-view active">
+        <!-- Gráficos Industriais -->
+        <div class="charts-row">
+          <div class="card chart-card">
+            <div class="card-header">
+              <h3>📉 Diagrama de Pareto: Causas de Perda (kg)</h3>
+              <span class="badge">Prioridade Lean</span>
+            </div>
+            <div class="card-body">
+              <div class="bar-chart-container" id="pareto-chart">
+                <!-- Barras geradas dinamicamente -->
+              </div>
+            </div>
+          </div>
+
+          <div class="card chart-card">
+            <div class="card-header">
+              <h3>🏭 Perdas por Máquina / Linha</h3>
+              <span class="badge">Distribuição</span>
+            </div>
+            <div class="card-body">
+              <div class="machine-chart-container" id="machine-chart">
+                <!-- Gráfico de máquinas -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerta e Tabela Recente -->
+        <div class="recent-section">
+          <div class="alert-box">
+            <div class="alert-icon">⚠️</div>
+            <div class="alert-content">
+              <strong>Diagnóstico Automático:</strong>
+              <span id="alert-text">Calculando análise de dispersão de perdas...</span>
+            </div>
+            <button class="btn btn-sm btn-outline" id="btn-ask-ai-alert">Analisar com IA</button>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Últimos Apontamentos Registrados</h3>
+              <a href="#" class="view-all-link" id="link-go-history">Ver todos →</a>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Data / Hora</th>
+                    <th>Máquina</th>
+                    <th>Turno</th>
+                    <th>Tipo de Papel</th>
+                    <th>Causa da Perda</th>
+                    <th>Perda (kg)</th>
+                    <th>Tempo Parada</th>
+                    <th>Operador</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-table-body">
+                  <!-- Linhas preenchidas via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: NOVO APONTAMENTO -->
+      <section id="view-novo-apontamento" class="content-view">
+        <div class="card form-card">
+          <div class="card-header">
+            <h3>📝 Ficha de Registro de Perda de Papel</h3>
+            <p>Preencha os dados operacionais da ocorrência para rastreabilidade e controle de refugo.</p>
+          </div>
+          <div class="card-body">
+            <form id="form-apontamento">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="input-maquina">Linha / Máquina *</label>
+                  <select id="input-maquina" required>
+                    <option value="">Selecione a Máquina</option>
+                    <option value="MP1 (Kraftliner)">MP1 - Máquina Fourdrinier (Kraftliner & Miolo)</option>
+                    <option value="MP2 (Tissue)">MP2 - Máquina Crescent Former (Tissue/Higiênico)</option>
+                    <option value="Bobinadeira 01">Bobinadeira 01 (Rebobinamento & Refile)</option>
+                    <option value="Cortadeira Duplex 02">Cortadeira Duplex 02 (Papel Cortado/Formatado)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-turno">Turno Operacional *</label>
+                  <select id="input-turno" required>
+                    <option value="Turno A (06h - 14h)">Turno A (06h - 14h)</option>
+                    <option value="Turno B (14h - 22h)">Turno B (14h - 22h)</option>
+                    <option value="Turno C (22h - 06h)">Turno C (22h - 06h)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-etapa">Etapa do Processo *</label>
+                  <select id="input-etapa" required>
+                    <option value="Mesa Plana (Formação)">Mesa Plana (Formação / Drenagem)</option>
+                    <option value="Prensas Úmidas">Seção de Prensas Úmidas</option>
+                    <option value="Secagem / Cilindros">Secagem (Cilindros de Vapor)</option>
+                    <option value="Cilindro Yankee">Cilindro Yankee (Crespagem Tissue)</option>
+                    <option value="Calandra / Pope">Calandra / Enroladeira Pope</option>
+                    <option value="Acabamento / Bobinadeira">Acabamento / Bobinadeira / Refilamento</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-tipo-papel">Tipo e Gramatura do Papel *</label>
+                  <select id="input-tipo-papel" required>
+                    <option value="Kraftliner 140g/m²">Kraftliner 140g/m²</option>
+                    <option value="Testliner 120g/m²">Testliner 120g/m²</option>
+                    <option value="Papel Miolo 110g/m²">Papel Miolo 110g/m²</option>
+                    <option value="Tissue Folha Dupla 15g/m²">Tissue Folha Dupla 15g/m²</option>
+                    <option value="Tissue Folha Simples 18g/m²">Tissue Folha Simples 18g/m²</option>
+                    <option value="Offset 75g/m²">Offset 75g/m²</option>
+                    <option value="Couché 120g/m²">Couché 120g/m²</option>
+                  </select>
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="input-causa">Motivo / Causa da Perda *</label>
+                  <select id="input-causa" required>
+                    <option value="">Selecione o motivo principal</option>
+                    <option value="Quebra de folha na seção de secagem">Quebra de folha na seção de secagem</option>
+                    <option value="Esmagamento de folha na prensa (faixa úmida)">Esmagamento de folha na prensa (faixa úmida)</option>
+                    <option value="Variação de gramatura transversal (fora do padrão)">Variação de gramatura transversal (fora do padrão)</option>
+                    <option value="Refugo de refile excessivo">Refugo de refile excessivo na bobinadeira</option>
+                    <option value="Rompimento no descolamento do Yankee">Rompimento no descolamento do cilindro Yankee</option>
+                    <option value="Furos e pontos de sujeira (manchas de piche/stickies)">Furos e pontos de sujeira (manchas de piche / stickies)</option>
+                    <option value="Desvio dimensional e esquadro imperfeito">Desvio dimensional e esquadro imperfeito</option>
+                    <option value="Variação de umidade transversal">Variação de umidade transversal</option>
+                    <option value="Quebra na transição de lote (Setup)">Quebra na transição de lote (Setup)</option>
+                    <option value="Outro motivo operacional">Outro motivo operacional</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-quantidade">Quantidade Perdida (kg) *</label>
+                  <input type="number" id="input-quantidade" placeholder="Ex: 1250" min="1" step="1" required>
+                  <small class="field-hint" id="calc-hint">Equivale a 0.00 toneladas</small>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-parada">Tempo de Parada de Máquina (minutos) *</label>
+                  <input type="number" id="input-parada" placeholder="Ex: 35" min="0" step="1" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-operador">Operador Responsável *</label>
+                  <input type="text" id="input-operador" placeholder="Nome do operador" value="Carlos Silva" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="input-data-hora">Data e Horário</label>
+                  <input type="datetime-local" id="input-data-hora">
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="input-acao">Ação Corretiva Imediata Adotada</label>
+                  <textarea id="input-acao" rows="3" placeholder="Descreva os ajustes realizados (ex: regulagem de vapor, desobstrução de chuveiros, alinhamento de facas)..."></textarea>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="reset" class="btn btn-secondary">Limpar Formulário</button>
+                <button type="submit" class="btn btn-primary" id="btn-salvar-apontamento">💾 Salvar Apontamento</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: HISTÓRICO COMPLETO -->
+      <section id="view-historico" class="content-view">
+        <div class="card">
+          <div class="card-header history-header">
+            <div>
+              <h3>📋 Histórico Completo de Apontamentos</h3>
+              <p>Consulte, filtre e exporte os registros de refugo e perdas industriais.</p>
+            </div>
+            <div class="history-controls">
+              <input type="text" id="filter-search" class="search-input" placeholder="🔍 Buscar por causa, papel, operador...">
+              <select id="filter-maquina" class="select-filter">
+                <option value="">Todas as Máquinas</option>
+                <option value="MP1">MP1 (Kraftliner)</option>
+                <option value="MP2">MP2 (Tissue)</option>
+                <option value="Bobinadeira">Bobinadeira 01</option>
+                <option value="Cortadeira">Cortadeira Duplex</option>
+              </select>
+              <button class="btn btn-secondary" id="btn-export-csv">📥 Exportar CSV</button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Data/Hora</th>
+                  <th>Máquina</th>
+                  <th>Turno</th>
+                  <th>Etapa</th>
+                  <th>Tipo Papel</th>
+                  <th>Causa da Perda</th>
+                  <th>Perda (kg)</th>
+                  <th>Parada</th>
+                  <th>Custo Est.</th>
+                  <th>Operador</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="history-table-body">
+                <!-- Preenchido via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 4: IA ASSISTENTE INTEGRADA -->
+      <section id="view-chat-ia" class="content-view">
+        <div class="chat-container">
+          <div class="chat-header">
+            <div class="chat-ai-profile">
+              <div class="ai-avatar">🤖</div>
+              <div>
+                <h3>Copilot Papeleiro • Especialista em Processos</h3>
+                <span class="ai-status">● Conectado à Base de Perdas em Tempo Real</span>
+              </div>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="btn-clear-chat">🧹 Limpar Conversa</button>
+          </div>
+
+          <!-- Sugestões Rápidas de Perguntas -->
+          <div class="chat-suggestions">
+            <span class="suggestion-label">Perguntas Rápidas:</span>
+            <button class="chip" data-prompt="Quais foram as maiores causas de perda de produção?">📊 Maiores Causas (Pareto)</button>
+            <button class="chip" data-prompt="Faça um diagnóstico completo das perdas na MP1">🏭 Diagnóstico MP1</button>
+            <button class="chip" data-prompt="Como resolver quebra de folha na seção de secagem?">⚙️ Quebra na Secagem</button>
+            <button class="chip" data-prompt="Qual o custo acumulado total das perdas registradas?">💰 Impacto Financeiro</button>
+            <button class="chip" data-prompt="Como evitar variação de gramatura e umidade na folha?">🎯 Variação de Gramatura</button>
+          </div>
+
+          <!-- Área de Mensagens -->
+          <div class="chat-messages" id="chat-messages">
+            <div class="message message-ai">
+              <div class="msg-avatar">🤖</div>
+              <div class="msg-bubble">
+                <p>Olá! Sou o seu <strong>Assistente IA Especialista em Fabricação de Papel e Celulose</strong>.</p>
+                <p>Estou monitorando os apontamentos de perda desta fábrica. Você pode me fazer perguntas sobre o refugo das máquinas (MP1, MP2, Bobinadeiras), causas de quebra de folha, custos de perdas ou boas práticas de processo!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input de Chat -->
+          <div class="chat-input-area">
+            <textarea id="chat-input" rows="2" placeholder="Digite sua dúvida operacional ou peça uma análise (ex: 'Quais as maiores perdas no Turno A?')..."></textarea>
+            <button class="btn btn-primary" id="btn-send-chat">Enviar 🚀</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
+

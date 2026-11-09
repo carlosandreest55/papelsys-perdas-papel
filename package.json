@@ -1,0 +1,12 @@
+{
+  "name": "papelsys-perdas-papel",
+  "version": "1.0.0",
+  "description": "Sistema de Apontamento de Perda de Produção para Fábrica de Papel com IA Assistente Integrada",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Antigravity AI",
+  "license": "MIT"
+}
+
